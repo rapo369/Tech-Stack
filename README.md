@@ -1,2 +1,2 @@
-# samples
-samples
+
+sample scripts and information on different technologies

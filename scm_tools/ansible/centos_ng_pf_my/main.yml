@@ -1,0 +1,21 @@
+---
+# This playbook installs and configures nginx, php-fpm & mysql in ubuntu linux distribution.
+# In general we mention respective host group for hosts below, but as this is installing in local , it is not required
+
+
+- name: All Roles
+  hosts: all
+
+  roles:
+   #- common
+   #- nginx
+   #- php-fpm
+   #- mysql
+   #- java
+   #- maven
+   #- tomcat
+   #- node
+   #- ruby
+   #- pro
+
+

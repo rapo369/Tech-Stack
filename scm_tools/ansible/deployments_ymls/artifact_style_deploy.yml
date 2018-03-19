@@ -1,0 +1,11 @@
+---
+
+- name: create folder test in tmp
+  hosts: localhost
+  tasks:
+
+   - name: Delete code folder
+     file:
+       path: /tmp/svn_test_repo
+       state: absent
+       

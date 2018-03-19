@@ -1,0 +1,64 @@
+---
+
+#- name: disable selinux
+    #command: /sbin/setenforce 0
+    # or
+    #shell: /sbin/setenforce 0
+    #ignore_errors: True
+
+- name: create user 'apache' if not exists
+  user:
+    name: apache
+    comment: "Apache User"
+    createhome: no
+    password: no
+
+- name: create user 'centos' if not exists
+  user:
+    name: centos
+    comment: "centos user"
+
+- name: Add centos and apache users to /etc/sudoers file
+  lineinfile:
+    path: /etc/sudoers
+    backup: yes
+    #line: '%centos ALL=(ALL) NOPASSWD: ALL\n%apache ALL=(ALL) NOPASSWD: ALL'
+    line: "{{ item }}"
+    insertafter: '^root'
+  with_items:
+    - '%centos ALL=(ALL) NOPASSWD: ALL'
+    - '%apache ALL=(ALL) NOPASSWD: ALL'
+
+- name: create directories /apps/nginx/html and /apps/nginx/logs/default if not exists
+
+  file:
+    path: "{{ item }}"
+    state: directory
+    mode: 0755
+    owner: root
+    group: root
+  with_items:
+    - /apps/nginx/html
+    - /apps/nginx/logs/default
+    - /apps/php-fpm/logs
+    - /etc/nginx/conf.d
+
+
+- name: Install common packages
+  apt: name={{ item }} update_cache=yes state=present
+  with_items:
+    - git
+    - jq
+    - curl
+
+
+
+
+
+
+
+
+
+
+
+

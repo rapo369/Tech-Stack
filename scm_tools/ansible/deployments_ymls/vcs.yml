@@ -1,0 +1,39 @@
+---
+
+- name: create folder test in tmp
+  hosts: localhost
+  tasks:
+
+#   - name: Delete SVN code folder
+#     file:
+#       path: /tmp/svn_test_repo
+#       state: absent
+
+#   - name: Delete GIT code folder
+#     file:
+#       path: /tmp/test_git_clone
+#       state: absent
+       
+   #- name: svn test
+   #  subversion:
+   #    repo: repo_url
+   #    dest: /tmp/svn_test_repo
+   #    update: yes
+   #    export: yes
+   #    username: "{{ svn_username }}"
+   #    password: "{{ svn_password }}"
+
+   - name: git test    
+     git:
+       repo: http://{{ git_username | urlencode }}:{{ git_password | urlencode }}@git.formaccorp.com:8082/gitadmin/testproject.git
+       dest: /tmp/test_git_clone
+       version: v1.0
+       #clone: no
+       #update: no
+
+   - name: copy folder to remote machine
+     copy:
+       src: /tmp/test_git_clone/
+       dest: /tmp/git_deploy_folder
+       force: yes
+

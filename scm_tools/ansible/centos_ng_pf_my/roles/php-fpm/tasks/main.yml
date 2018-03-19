@@ -1,0 +1,47 @@
+---
+
+- name: Get php version
+  command: 'php -v'
+  ignore_errors: true
+  register: php_version
+  changed_when: false
+
+- name: uninstall php in version less than5.4
+  yum:
+    name: php
+    state: removed
+  ignore_errors: true
+  when: ('5.4' in php_version.stdout)
+
+- name: Install PHP
+  yum:
+    name: php
+    update_cache: yes
+    state: present
+
+- name: Install php related libraries and php-fpm
+  yum:
+    name: "{{ item }}"
+    state: installed
+  with_items:
+    - php-cli
+    - php-curl
+    - php-mysql
+    - php-mcrypt
+    - php-fpm
+
+- name: Copy php.ini, php-fpm.conf and www.conf template files
+  template: src=php.ini dest=/etc/php.ini
+- name: Copy php.ini, php-fpm.conf and www.conf template files
+  template: src=php-fpm.conf dest=/etc/php-fpm.conf
+- name: Copy php.ini, php-fpm.conf and www.conf template files
+  template: src=www.conf dest=/etc/php-fpm.d/www.conf
+
+- name: start php-fpm service and enable
+  service:
+    name: php-fpm
+    state: restarted
+    enabled: yes
+
+
+
