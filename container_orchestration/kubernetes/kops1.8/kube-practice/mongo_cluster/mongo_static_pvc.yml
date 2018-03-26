@@ -1,0 +1,147 @@
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mongocluster-pvc-conf-1
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: mongocluster-sc
+  selector:
+    matchLabels:
+      name: mongo-conf-1
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mongocluster-pvc-conf-2
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: mongocluster-sc
+  selector:
+    matchLabels:
+      name: mongo-conf-2
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mongocluster-pvc-conf-3
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: mongocluster-sc
+  selector:
+    matchLabels:
+      name: mongo-conf-3
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mongocluster-pvc-srd-1-1
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: mongocluster-sc
+  selector:
+    matchLabels:
+      name: mongo-srd-1-1
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mongocluster-pvc-srd-1-2
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: mongocluster-sc
+  selector:
+    matchLabels:
+      name: mongo-srd-1-2
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mongocluster-pvc-srd-1-3
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: mongocluster-sc
+  selector:
+    matchLabels:
+      name: mongo-srd-1-3
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mongocluster-pvc-srd-2-1
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: mongocluster-sc
+  selector:
+    matchLabels:
+      name: mongo-srd-2-1
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mongocluster-pvc-srd-2-2
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: mongocluster-sc
+  selector:
+    matchLabels:
+      name: mongo-srd-2-2
+
+---
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mongocluster-pvc-srd-2-3
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: mongocluster-sc
+  selector:
+    matchLabels:
+      name: mongo-srd-2-3
+
+
+
+

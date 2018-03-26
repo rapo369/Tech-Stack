@@ -1,0 +1,165 @@
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: mongo-conf-1
+  labels:
+    name: mongo-conf-1
+spec:
+  storageClassName: mongocluster-sc
+  capacity:
+    storage: 10Gi
+  awsElasticBlockStore:
+      fsType: ext4
+      volumeID: aws://us-east-2a/vol-0e3bcfc4f1a1355b8
+  persistentVolumeReclaimPolicy: Retain
+  accessModes:
+    - ReadWriteOnce
+  
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: mongo-conf-2
+  labels:
+    name: mongo-conf-2
+spec:
+  storageClassName: mongocluster-sc
+  capacity:
+    storage: 10Gi
+  awsElasticBlockStore:
+      fsType: ext4
+      volumeID: aws://us-east-2b/vol-0f8314e7af9dbbd2e
+  persistentVolumeReclaimPolicy: Retain
+  accessModes:
+    - ReadWriteOnce
+
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: mongo-conf-3
+  labels:
+    name: mongo-conf-3
+spec:
+  storageClassName: mongocluster-sc
+  capacity:
+    storage: 10Gi
+  awsElasticBlockStore:
+      fsType: ext4
+      volumeID: aws://us-east-2c/vol-0ecd7c967fe86c405
+  persistentVolumeReclaimPolicy: Retain
+  accessModes:
+    - ReadWriteOnce
+
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: mongo-srd-1-1
+  labels:
+    name: mongo-srd-1-1
+spec:
+  storageClassName: mongocluster-sc
+  capacity:
+    storage: 10Gi
+  awsElasticBlockStore:
+      fsType: ext4
+      volumeID: aws://us-east-2a/vol-0a04bf5440aada1ff
+  persistentVolumeReclaimPolicy: Retain
+  accessModes:
+    - ReadWriteOnce
+
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: mongo-srd-1-2
+  labels:
+    name: mongo-srd-1-2
+spec:
+  storageClassName: mongocluster-sc
+  capacity:
+    storage: 10Gi
+  awsElasticBlockStore:
+      fsType: ext4
+      volumeID: aws://us-east-2b/vol-0d93c0420b047aeca
+  persistentVolumeReclaimPolicy: Retain
+  accessModes:
+    - ReadWriteOnce
+
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: mongo-srd-1-3
+  labels:
+    name: mongo-srd-1-3
+spec:
+  storageClassName: mongocluster-sc
+  capacity:
+    storage: 10Gi
+  awsElasticBlockStore:
+      fsType: ext4
+      volumeID: aws://us-east-2c/vol-0352064e1be30d72c
+  persistentVolumeReclaimPolicy: Retain
+  accessModes:
+    - ReadWriteOnce
+
+
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: mongo-srd-2-1
+  labels:
+    name: mongo-srd-2-1
+spec:
+  storageClassName: mongocluster-sc
+  capacity:
+    storage: 10Gi
+  awsElasticBlockStore:
+      fsType: ext4
+      volumeID: aws://us-east-2a/vol-06b624ef3a215e5dc
+  persistentVolumeReclaimPolicy: Retain
+  accessModes:
+    - ReadWriteOnce
+
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: mongo-srd-2-2
+  labels:
+    name: mongo-srd-2-2
+spec:
+  storageClassName: mongocluster-sc
+  capacity:
+    storage: 10Gi
+  awsElasticBlockStore:
+      fsType: ext4
+      volumeID: aws://us-east-2b/vol-0b3dedb9ef4e02660
+  persistentVolumeReclaimPolicy: Retain
+  accessModes:
+    - ReadWriteOnce
+
+---
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: mongo-srd-2-3
+  labels:
+    name: mongo-srd-2-3
+spec:
+  storageClassName: mongocluster-sc
+  capacity:
+    storage: 10Gi
+  awsElasticBlockStore:
+      fsType: ext4
+      volumeID: aws://us-east-2c/vol-04c256abd802d9f4b
+  persistentVolumeReclaimPolicy: Retain
+  accessModes:
+    - ReadWriteOnce
+
+
+
