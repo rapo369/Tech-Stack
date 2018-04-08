@@ -1,0 +1,27 @@
+apiVersion: apps/v1beta1
+kind: Deployment
+metadata:
+  name: php-fpm
+spec:
+  selector:
+    matchLabels:
+      name: php-fpm
+  replicas: 3
+  template:
+      metadata:
+        labels:
+          name: php-fpm
+      spec:
+        containers:
+        - name: php-fpm
+          image: docker.io/majksner/php-fpm
+          resources:
+            requests:
+              memory: "128Mi"
+              cpu: "250m"
+            limits:
+              memory: "256Mi"
+              cpu: "500m"
+          ports:
+          - containerPort: 9000
+

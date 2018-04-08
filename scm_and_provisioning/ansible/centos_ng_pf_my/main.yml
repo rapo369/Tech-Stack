@@ -7,10 +7,10 @@
   hosts: all
 
   roles:
-   #- common
+   - common
    #- nginx
    #- php-fpm
-   #- mysql
+   - mysql
    #- java
    #- maven
    #- tomcat

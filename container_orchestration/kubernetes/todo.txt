@@ -1,0 +1,16 @@
+pod auto scaling
+
+
+node autoscaling
+
+
+PodPresets
+
+configure default compute resources for namespace
+
+
+
+
+
+
+
