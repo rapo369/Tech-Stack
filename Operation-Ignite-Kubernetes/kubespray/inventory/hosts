@@ -1,0 +1,40 @@
+[all]
+kubernetes-Prod-SS-master0 ansible_host=10.140.41.58
+kubernetes-Prod-SS-master1 ansible_host=10.140.41.115
+kubernetes-Prod-SS-master2 ansible_host=10.140.41.26
+kubernetes-Prod-SS-worker0 ansible_host=10.140.41.54
+kubernetes-Prod-SS-worker1 ansible_host=10.140.41.93
+kubernetes-Prod-SS-worker2 ansible_host=10.140.41.22
+kubernetes-Prod-SS-etcd0 ansible_host=10.140.41.34
+kubernetes-Prod-SS-etcd1 ansible_host=10.140.41.81
+kubernetes-Prod-SS-etcd2 ansible_host=10.140.41.4
+
+
+bastion ansible_host=18.184.90.20
+bastion ansible_host=18.184.65.14
+
+[kube-master]
+kubernetes-Prod-SS-master0
+kubernetes-Prod-SS-master1
+kubernetes-Prod-SS-master2
+
+
+[kube-node]
+kubernetes-Prod-SS-worker0
+kubernetes-Prod-SS-worker1
+kubernetes-Prod-SS-worker2
+
+
+[etcd]
+kubernetes-Prod-SS-etcd0
+kubernetes-Prod-SS-etcd1
+kubernetes-Prod-SS-etcd2
+
+
+[k8s-cluster:children]
+kube-node
+kube-master
+
+
+[k8s-cluster:vars]
+apiserver_loadbalancer_domain_name="kubernetes-elb-Prod-SS-1838735036.eu-central-1.elb.amazonaws.com"

@@ -1,0 +1,119 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: saas-krc-sp
+  labels:
+    app: saas-krc-sp
+    group: sp
+    ms: saas
+data:
+  HAA_state_dir: "/mnt/data/krc"
+  HAA_vehicle_haa_platform_redis_database: "0"
+  HAA_vehicle_haa_platform_redis_password: ""
+  HAA_application_id: "saas-krc-sp"
+  HAA_source_topic_name: "haa-harman-dev-events,haa-harman-dev-alerts"
+  HAA_retain_execute_every: "5"
+  HAA_vehicle_haa_platform_redis_retain_rows: "5"
+  HAA_redis_pipeline_batch_size: "500"
+  HAA_vehicle_haa_platform_mongo_password: "5D0c72dz4bxl"
+  HAA_vehicle_haa_platform_mongo_hosts: "localhost:27017"
+  HAA_vehicle_haa_platform_mongo_database: "ignite"
+  HAA_redis_mode: SENTINEL
+  HAA_redis_sentinel_endpoints: "redis-sentinel-0.redis-sentinel-svc:26379,redis-sentinel-1.redis-sentinel-svc:26379,redis-sentinel-2.redis-sentinel-svc:26379"
+  HAA_bootstrap_servers: "kafka-0.kafka-svc.default.svc.cluster.local:9092,kafka-1.kafka-svc.default.svc.cluster.local:9092,kafka-2.kafka-svc.default.svc.cluster.local:9092"
+  HAA_zookeeper_connect: "zk-0.zk-svc.default.svc.cluster.local:2182,zk-1.zk-svc.default.svc.cluster.local:2182,zk-2.zk-svc.default.svc.cluster.local:2182"
+  LOG_LEVEL: "-DLOG_LEVEL=DEBUG"
+  LOG_FILE_LOCATION: "-DLOG_FILE_LOCATION=/mnt/logs/saas/krc-sp/krc.log"
+  HAA_metric_reporters_name: ""
+  HAA_metric_logging_interval: "3600"
+  HAA_num_stream_threads: "1"
+  HAA_consumer_max_poll_records: "1000"
+  HAA_kafka_ssl_enable: "false"
+  JVM_OPTS: "-Xmx1g -Xms1g -XX:NativeMemoryTracking=detail -XX:MetaspaceSize=96m -XX:G1HeapRegionSize=16M -XX:MinMetaspaceFreeRatio=50 -XX:MaxMetaspaceFreeRatio=80 -server -XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:InitiatingHeapOccupancyPercent=35 -XX:+DisableExplicitGC -Djava.awt.headless=true"
+  VERSION: "1"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: saas-krc-sp-svc
+  labels:
+    app: saas-krc-sp
+spec:
+  ports:
+  - port: 1883
+    name: server
+  clusterIP: None
+  selector:
+    app: saas-krc-sp
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: saas-krc-sp
+spec:
+  serviceName: saas-krc-sp-svc
+  selector:
+    matchLabels:
+      app: saas-krc-sp
+  replicas: 2
+  template:
+    metadata:
+      labels:
+        app: saas-krc-sp
+        group: sp
+        ms: saas
+      name: saas-krc-sp
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node.ignite.harman.com/component
+                operator: In
+                values: ["streaming"]
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                    - saas-krc-sp
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: saas-krc-sp
+        image: registry.ahanet.net:5000/haa/kafka-redis-connector:7.12-SNAPSHOT
+        imagePullPolicy: Always
+        command: ["/kafka-redis-connector/bin/start.sh"]
+        resources:
+          requests:
+            memory: "1Gi"
+            cpu: "500m"
+        envFrom:
+        - configMapRef:
+            name: saas-krc-sp
+        volumeMounts:
+          - mountPath: /mnt/data/saas/krc-sp
+            name: saas-krc-sp-data
+          - mountPath: /mnt/logs/saas/krc-sp
+            name: saas-krc-sp-logs
+      imagePullSecrets:
+      - name: regcred
+  volumeClaimTemplates:
+  - metadata:
+      name: saas-krc-sp-data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: normal
+      resources:
+        requests:
+          storage: 100Gi
+  - metadata:
+      name: saas-krc-sp-logs
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: normal
+      resources:
+        requests:
+          storage: 20Gi

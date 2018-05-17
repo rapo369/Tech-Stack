@@ -1,0 +1,177 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: redis-config
+  labels:
+    app: redis
+data:
+  redis.conf: |+
+    bind 0.0.0.0
+    port 6379
+    tcp-backlog 511
+    timeout 0
+    tcp-keepalive 300
+    supervised no
+    loglevel notice
+    logfile ""
+    databases 16
+    save ""
+    stop-writes-on-bgsave-error yes
+    rdbcompression yes
+    rdbchecksum yes
+    dir /data
+    slave-serve-stale-data yes
+    slave-read-only yes
+    repl-diskless-sync yes
+    repl-diskless-sync-delay 30
+    repl-ping-slave-period 600
+    repl-timeout 3000
+    repl-disable-tcp-nodelay no
+    repl-backlog-size 1gb
+    repl-backlog-ttl 3600
+    slave-priority 100
+    maxmemory 3gb
+    maxmemory-policy noeviction
+    appendonly yes
+    appendfilename "haa-redis-appendonly.aof"
+    appendfsync everysec
+    no-appendfsync-on-rewrite no
+    auto-aof-rewrite-percentage 30
+    auto-aof-rewrite-min-size 64mb
+    aof-load-truncated yes
+    lua-time-limit 5000
+    slowlog-max-len 128
+    latency-monitor-threshold 0
+    notify-keyspace-events ""
+    list-max-ziplist-size -2
+    list-compress-depth 0
+    set-max-intset-entries 512
+    zset-max-ziplist-entries 128
+    zset-max-ziplist-value 64
+    hll-sparse-max-bytes 3000
+    activerehashing yes
+    client-output-buffer-limit normal 0 0 0
+    client-output-buffer-limit slave 512mb 512mb 0
+    client-output-buffer-limit pubsub 32mb 8mb 60
+    hz 10
+    aof-rewrite-incremental-fsync yes
+    protected-mode no
+  slaveassign.sh: |+
+    #!/bin/bash
+    set -x
+    cp /conf_org/redis.conf /conf/redis.conf
+    if [ "PONG" = "$(redis-cli -h redis-sentinel-0.redis-sentinel-svc -p 26379 ping)" ]
+    then
+    mhost=$(redis-cli -h redis-sentinel-0.redis-sentinel-svc -p 26379 sentinel master redis-sentinel|head -4|tail -1|awk '{print $1}')
+    echo "Master is $mhost"
+    sed -i 's/^#slaveof.*/slaveof $mhost 6379/' /conf/redis.conf
+    sed -i 's/^slaveof.*/slaveof $mhost 6379/' /conf/redis.conf
+    nupd=$(grep '^slaveof' /conf/redis.conf |wc -l)
+    if [ "$nupd" = "0" ]
+    then
+    echo "Didn't find slaveof in redis.conf"
+    echo "slaveof $mhost 6379" >> /conf/redis.conf
+    echo "Added slaveof in redis.conf"
+    fi
+    echo "Set master to $mhost in /conf/redis.conf"
+    else
+    echo "Skipping slaveof update as sentinel is not running"
+    fi
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-svc
+  labels:
+    app: redis
+spec:
+  ports:
+  - port: 6379
+    name: server
+  clusterIP: None
+  selector:
+    app: redis
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis
+spec:
+  serviceName: redis-svc
+  selector:
+    matchLabels:
+      app: redis
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: redis
+      name: redis
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node.ignite.harman.com/component
+                operator: In
+                values: ["redis"]
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                    - redis
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: redis
+        image: redis:4.0.8
+        command:
+        - sh
+        - -c
+        - "sh /conf_org/slaveassign.sh && redis-server /conf/redis.conf"
+        ports:
+        - containerPort: 6379
+          name: server
+        lifecycle:
+        volumeMounts:
+          - mountPath: /data
+            name: data
+          - mountPath: /conf
+            name: conf
+          - mountPath: /conf_org
+            name: conf-org
+#      initContainers:
+#      - name: setup
+#        image: busybox
+#        command:
+#        - cp
+#        - "/conf_org/slaveassign.sh"
+#        - "/conf"
+#        volumeMounts:
+#          - name: conf
+#            mountPath: "/conf"
+#          - name: conf-org
+#            mountPath: "/conf_org"
+      volumes:
+        - name: conf
+          emptyDir: {}
+        - name: conf-org
+          configMap:
+            name: redis-config
+            items:
+            - key: redis.conf
+              path: redis.conf
+            - key: slaveassign.sh
+              path: slaveassign.sh
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: normal
+      resources:
+        requests:
+          storage: 100Gi
