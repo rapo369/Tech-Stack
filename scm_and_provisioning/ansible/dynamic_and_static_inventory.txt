@@ -1,0 +1,32 @@
+Assigning ssh keys for dynamic and static inventory
+----------------------------------------------------
+
+--> create directory like /etc/ansible/aws_prod
+--> copy ec2.py and ec2.ini for dynamic inventory and hosts file for static inventory
+--> put variables like ssh key in file tag_Name_web_server.yml
+
+/etc/ansible/aws_test_inventory/
+├── ec2.ini
+├── ec2.py
+└── group_vars
+    └── tag_Name_web_server.yml
+
+
+https://stackoverflow.com/questions/33795607/how-to-define-ssh-private-key-for-servers-fetched-by-dynamic-inventory-in-files
+
+sample commands
+---------------
+
+AWS_PROFILE=test ansible -i /etc/ansible/aws_test_inventory/ tag_Name_dev_web -u centos -m ping
+AWS_PROFILE=test ansible -i /etc/ansible/ec2.py tag_Name_dev_web -u centos -m ping
+AWS_PROFILE=test ansible -i /etc/ansible/ec2.py IPADDRESS -u centos -m ping --private-key /opt/pem_files/pemfile.pem
+
+--> In above command AWS_PROFILE is profile to use for aws account
+--> inventory can be specified as single file like ec2.py from /etc/ansible/ or from custom directory where we can specify custom group vars and static hosts etc.
+--> key file can be specified.
+--> IPADDRESS can be specified for single server.
+--> tag name like 'tag_Name_dev_web' can be specified which acts like ansible group.
+
+ansible group can be aws region , tag_name, vpc_id , key_name, instance_id, ec2 etc.
+
+If we use group as tag name , any '-' symbol will be converted to '_'

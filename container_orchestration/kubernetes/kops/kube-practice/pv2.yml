@@ -1,0 +1,17 @@
+kind: PersistentVolume
+apiVersion: v1
+metadata:
+  name: manual-pv-mongo2
+  labels:
+    name: mongo
+spec:
+  storageClassName: mongo
+  capacity:
+    storage: 40Gi
+  awsElasticBlockStore:
+      fsType: ext4
+      volumeID: aws://us-east-2a/vol-0991c83a8a8238ab1
+  persistentVolumeReclaimPolicy: Retain
+  accessModes:
+    - ReadWriteOnce
+  

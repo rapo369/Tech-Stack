@@ -1,0 +1,46 @@
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mongocluster-dy-pvc-conf-1
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: mongocluster-dy-sc
+#  selector:
+#    matchLabels:
+#      name: mongoc-conf-1
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mongocluster-dy-pvc-conf-2
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: mongocluster-dy-sc
+#  selector:
+#    matchLabels:
+#      name: mongo-conf-2
+
+kind: PersistentVolumeClaim
+apiVersion: v1
+metadata:
+  name: mongocluster-dy-pvc-conf-3
+spec:
+  accessModes:
+    - ReadWriteOnce
+  resources:
+    requests:
+      storage: 10Gi
+  storageClassName: mongocluster-dy-sc
+#  selector:
+#    matchLabels:
+#      name: mongo-conf-3
+
+

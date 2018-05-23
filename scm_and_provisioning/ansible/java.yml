@@ -1,0 +1,36 @@
+---
+
+- name: Install Java in ubuntu
+  hosts: localhost
+
+  tasks:
+
+    - name: Include OS-specific variables.
+      include_vars: Debian.yml
+
+    - name: Install python-properties
+      when: "ansible_os_family == 'Debian'"
+      apt: 
+        name={{ item }}
+        state=latest 
+        update_cache=yes
+      with_items: 
+       - python-software-properties
+
+    - name: Add java apt_repository
+      apt_repository:
+        repo: 'ppa:openjdk-r/ppa'
+        update_cache: yes
+
+    - name: Install Java - OpenJDK version
+      when: "ansible_os_family == 'Debian'"
+      apt:
+        name: "{{ item }}"
+        state: present
+      with_items:
+        - openjdk-8-jdk
+
+
+
+
+

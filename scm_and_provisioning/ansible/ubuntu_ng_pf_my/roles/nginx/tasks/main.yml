@@ -1,0 +1,37 @@
+---
+- name: NGINX | Adding NGINX signing key
+  apt_key: url=http://nginx.org/keys/nginx_signing.key state=present
+ 
+- name: NGINX | Adding sources.list deb url for NGINX
+  lineinfile: dest=/etc/apt/sources.list line="deb http://nginx.org/packages/ubuntu/ trusty nginx"
+ 
+- name: NGINX Plus | Adding sources.list deb-src url for NGINX
+  lineinfile: dest=/etc/apt/sources.list line="deb-src http://nginx.org/packages/ubuntu/ trusty nginx"
+ 
+- name: NGINX | Updating apt cache
+  apt:
+    update_cache: yes
+
+- name: NGINX | Installing NGINX
+  apt:
+    name: nginx=1.8.*
+    #pkg: nginx
+    #dpkg_options: '--force-yes'
+    force: yes
+    #autoremove: yes
+    state: installed
+ 
+- name: NGINX | copying configuration files
+  #template: src= "{{ item.src }}" dest= "{{ item.dest }}"
+  #with_items: 
+  #  - { src: 'nginx.conf', dest: '/etc/nginx/nginx.conf' }
+  #  - { src: 'default.conf', dest: '/etc/nginx/conf.d/default.conf' }
+  template: src='nginx.conf' dest='/etc/nginx/nginx.conf'
+  template: src='default.conf' dest='/etc/nginx/conf.d/default.conf'
+
+- name: NGINX | Starting NGINX
+  service: name=nginx state=restarted enabled=yes
+  
+  #notify: 
+  #- restart nginx
+

@@ -1,0 +1,81 @@
+
+
+Deployment scripts - Dev and QA with jenkins and parameters
+
+	- code changes
+	- DB changes
+
+Deployment scripts - UAT replicating production with jenkins and parameters
+
+	- code changes
+	- DB changes
+
+Deployment scripts - SALES - replicating production with jenkins and parameters
+
+	- code changes
+	- DB changes
+
+Deployment scripts - PROD with jenkins and parameters
+
+	- code changes
+	- DB changes
+
+================================================================================
+
+
+AWS scripts - starting and stopping servers, creating images and deleting volumes , snapshots and LCGs
+
+
+===================================
+
+
+Backup maintanance and testing of backups
+zabbix monitoring scripts etc
+
+===============================================================================
+
+
+handling exceptions and Sending emails in all scripts
+
+
+============================================================
+
+
+
+Docker implementation in future
+
+
+===============================================
+
+
+Ansible tasks
+
+
+=========================
+
+
+
+kubernetes integration
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+

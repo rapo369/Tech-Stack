@@ -1,0 +1,39 @@
+node {
+        try {   
+            // Merge code
+            stage ('Merge Code from eyard_dev_3.9 to eyard_test') {
+                
+                    echo "Updating code"
+                    sh script: '/apps/jenkins/eyardstick/scripts/merge_eyard_dev_to_qa.sh'
+                    
+            }
+            // Update test.eyardstick.com by running shell scripts remotely
+            
+            stage ('Update test') {
+                
+                    echo "Updating code in 52.76.233.205"
+                    sh 'ssh -o StrictHostKeyChecking=no -i /apps/pem_files/formactest.pem centos@52.76.233.205 /bin/bash /apps/code_update/eyard_test_code_update.sh'
+                    echo "Updating code in 52.77.200.220"
+                    sh 'ssh -o StrictHostKeyChecking=no -i /apps/pem_files/formactest.pem centos@52.77.200.220 /bin/bash /apps/code_update/eyard_test_code_update.sh'
+                    
+                    emailext attachLog: true, body: "Build success (see ${env.BUILD_URL})", subject: "[JENKINS] ${env.JOB_NAME} : SUCCESS", to: 'prakash.diyyala@formaccorp.com,frmc_it@formaccorp.com'
+            }
+            
+            
+        } catch (e) {
+            emailext attachLog: true, body: "Build failed (see ${env.BUILD_URL})", subject: "[JENKINS] ${env.JOB_NAME} : FAILED", to: 'jp19214@gmail.com'
+            // currentBuild.result = "FAILED"
+            // notifyFailed()
+            throw e
+        }
+        // finally {
+        //     notifyFailed()
+        // }
+    }
+            
+            // def notifyFailed() {
+            //     mail bcc: '', body: "Build URL : ${BUILD_URL} Build Id : ${BUILD_NUMBER} Build Status : ${currentBuild.result}",
+            //     cc: '', from: 'jenkins@imfao.com', replyTo: '', subject: "${JOB_NAME}  : ${currentBuild.result}", to: 'jp19214@gmail.com'
+                
+            // }
+            

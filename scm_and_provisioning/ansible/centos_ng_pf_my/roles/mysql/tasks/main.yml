@@ -1,0 +1,88 @@
+---
+- name: Ensure MySQL Python libraries are installed.
+  yum: 
+    name: MySQL-python 
+    state: installed
+
+- name: Install MySQL Repo
+  yum:
+    name: https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+    #name: http://dev.mysql.com/get/mysql-community-release-el7-5.noarch.rpm
+    #pkg: mysql-community-server
+    state: present
+
+- name: Install MySQL
+  yum:
+    #name: https://dev.mysql.com/get/mysql57-community-release-el7-11.noarch.rpm
+    #name: http://dev.mysql.com/get/mysql-community-release-el7-5.noarch.rpm
+    pkg: mysql-community-server
+    state: installed
+
+- name: Initialize mysqld with insecure (blank '' password)
+  command: mysqld --initialize-insecure --datadir /apps/mysql/data
+  register: mysqld_initialize_status
+  ignore_errors: true
+
+- debug: msg=" {{ mysqld_initialize_status }} "
+
+- name: change permissions to mysql user for /var/lib/mysql
+  file:
+    dest: "{{ item }}"
+    state: directory
+    recurse: yes
+    owner: mysql
+    group: mysql
+  when: ('has files in' not in mysqld_initialize_status.stdout)
+  with_items:
+    - /apps/mysql/data
+    - /apps/mysql/logs
+
+- name: change permissions to mysql user for /var/log/mysqld.log
+  file:
+    dest: /apps/mysql/logs/mysqld.log
+    owner: mysql
+    group: mysql
+    state: touch
+  when: ('has files in' not in mysqld_initialize_status.stdout)
+
+#- name: give selinux permission to mysql to change data directory
+#  command: semanage permissive -a mysqld_t
+
+- name: copy my.cnf template
+  template: 
+    src: roles/mysql/templates/my.cnf
+    dest: /etc/my.cnf
+
+- name: Get MySQL version.
+  command: 'mysql --version'
+  register: mysql_cli_version
+  changed_when: false
+
+#- name: get mysql temprary password and register
+#  shell: "sed -n -e 's/.*root@localhost: //p' /var/log/mysqld.log | tail -1"
+#  register: temp_password
+#  when: ('5.7.' in mysql_cli_version.stdout)
+
+- name: Start mysql service
+  service:
+    name: mysqld
+    state: restarted
+    enabled: yes
+
+- name: change MySQL root password for 5.7.* version
+  command: mysql -uroot --password="" -NBe "ALTER USER 'root'@'localhost' IDENTIFIED WITH mysql_native_password BY 'Password@123';"
+  when: 
+    - ('5.7.' in mysql_cli_version.stdout)
+    - ('has files in' in mysqld_initialize_status.stderr)
+
+- name: change MySQL root password for version below version 5.7
+  command: mysql -uroot --password="" -e "ALTER USER 'root'@'localhost' IDENTIFIED BY  'Password@123';"
+  when: ('5.7.' not in mysql_cli_version.stdout) and ('has files in' not in mysqld_initialize_status.stdout)
+
+- name: Retart mysql service
+  service:
+    name: mysqld
+    state: restarted
+    enabled: yes
+
+

@@ -1,0 +1,27 @@
+---
+
+- name: create folder test in tmp
+  hosts: all
+  tasks:
+
+   - name: Delete code folder
+     file:
+       path: "/tmp/{{ code_folder }}"
+       state: absent
+   - name: create code folder
+     file:
+       path: "/tmp/{{ code_folder }}"
+       state: directory
+       mode: 0755
+       owner: apache
+   #- name: copy tar file to /tmp directory
+   #  copy:
+   #    src: "{{ src_tar_filename }}"
+   #    dest: "/tmp/{{ code_tar_filename }}"
+   #    force: yes
+   - name: unarchive tar file
+     unarchive:
+       src: "{{ src_tar_filename }}"
+       dest: "/tmp/{{ code_folder }}"
+       list_files: yes
+       

@@ -1,0 +1,7 @@
+---
+
+- name: create folder test in tmp
+  hosts: localhost
+  tasks:
+
+   - debug: msg="{{ lookup('env','HOME') }} is an environment variable"

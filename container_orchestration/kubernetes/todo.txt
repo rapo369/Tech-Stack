@@ -1,0 +1,20 @@
+pod auto scaling
+
+
+node autoscaling
+
+
+PodPresets
+
+configure default compute resources for namespace
+
+https://kubernetes.io/docs/concepts/configuration/overview/
+
+https://kubernetes.io/docs/concepts/cluster-administration/manage-deployment/
+
+
+https://kubernetes.io/docs/concepts/overview/object-management-kubectl/overview/
+
+
+
+

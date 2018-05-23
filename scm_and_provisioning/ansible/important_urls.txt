@@ -1,0 +1,10 @@
+Filters
+---------
+http://docs.ansible.com/ansible/latest/playbooks_filters.html
+
+http://ansible-docs.readthedocs.io/zh/stable-2.0/rst/playbooks_filters.html
+
+
+http://docs.ansible.com/ansible/latest/playbooks_variables.html
+
+
