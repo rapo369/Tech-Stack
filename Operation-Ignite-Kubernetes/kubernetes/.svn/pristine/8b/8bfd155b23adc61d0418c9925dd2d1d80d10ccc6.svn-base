@@ -1,0 +1,204 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: saas-api-config
+  labels:
+    app: saas-api
+    group: api
+data:
+  mongodb: "localhost:27017"
+  mongodb-db: "ignite"
+  kafka: "kafka-0.kafka-svc:9092,kafka-1.kafka-svc:9092,kafka-2.kafka-svc:9092"
+  redis-mode: "SENTINEL"
+  redis-sentinel: "redis-sentinel-0.redis-sentinel-svc:26379,redis-sentinel-1.redis-sentinel-svc:26379,redis-sentinel-2.redis-sentinel-svc:26379"
+  redis-db: "0"
+  redis-master-name: "redis-sentinel"
+  notification-config-kafka-topic: "haa-harman-dev-haa-internal"
+  general-config-kafka-topic: "haa-harman-dev-haa-internal"
+  mqtt: "hivemq-int-svc.default.svc.cluster.local:1883"
+  dmurl: ""
+  tenant: "harman"
+  env: "dev"
+  log-level: "INFO"
+  device-association-check-enabled: "false"
+  oauth-url: "https://ignite-dev-small.ahanet.net:8443"
+  oauth-header: "WjUyQUluRkliakY2NDdqM2l1bWs3V2FJTWljYTpnWDlUTjFYbUV0Nl81dmM4ZzJ0YVljaWxnb1lh"
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: saas-api-ext-svc
+  labels:
+    app: saas-api
+    group: api
+    facing: external
+    impl: external
+spec:
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    name: tcp
+  type: LoadBalancer
+  selector:
+    app: saas-api
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: saas-api-int-svc
+  labels:
+    app: saas-api
+    group: api
+    facing: internal
+    impl: native
+spec:
+  ports:
+  - protocol: TCP
+    port: 8080
+    targetPort: 8080
+    name: tcp
+  selector:
+    app: saas-api
+---
+apiVersion: apps/v1
+kind: Deployment
+metadata:
+  name: saas-api
+  labels:
+    app: saas-api
+    group: api
+spec:
+  selector:
+    matchLabels:
+      app: saas-api
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: saas-api
+        group: api
+      name: saas-api
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node.ignite.harman.com/component
+                operator: In
+                values: ["api"]
+      containers:
+      - name: saas-api
+        image: registry.ahanet.net:5000/haa/api:7.10-SNAPSHOT
+        command: 
+        - sh
+        - -c
+        - "env mongodb.hosts=$NODE_NAME:27017 /bin/sh /opt/api/bin/start.sh"
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "500m"
+        ports:
+        - containerPort: 8080
+          name: tcp
+        env:
+        - name: NODE_NAME
+          valueFrom:
+            fieldRef:
+              fieldPath: spec.nodeName
+        - name: CATALINA_OPTS
+          value : "-server -Xmx2G -Xms1G -XX:+UseG1GC -XX:MaxGCPauseMillis=20 -XX:InitiatingHeapOccupancyPercent=35 -XX:+DisableExplicitGC -Djava.awt.headless=true"
+        - name: mongodb.hosts
+          valueFrom:
+            configMapKeyRef:
+                name: saas-api-config
+                key: mongodb
+        - name: mongodb.database
+          valueFrom:
+            configMapKeyRef:
+                name: saas-api-config
+                key: mongodb-db
+        - name: mqtt.broker.url
+          valueFrom:
+            configMapKeyRef:
+                name: saas-api-config
+                key: mqtt
+        - name: kafka.bootstrap.servers
+          valueFrom:
+            configMapKeyRef:
+                name: saas-api-config
+                key: kafka
+        - name: redis.mode
+          valueFrom:
+            configMapKeyRef:
+                name: saas-api-config
+                key: redis-mode
+        - name: redis.sentinel.endpoints
+          valueFrom:
+            configMapKeyRef:
+                name: saas-api-config
+                key: redis-sentinel
+        - name: redis.database
+          valueFrom:
+            configMapKeyRef:
+                name: saas-api-config
+                key: redis-db
+        - name: redis.master.name
+          valueFrom:
+            configMapKeyRef:
+                name: saas-api-config
+                key: redis-master-name
+        - name: notification.config.kafka.topic
+          valueFrom:
+            configMapKeyRef:
+                name: saas-api-config
+                key: notification-config-kafka-topic
+        - name: general.config.kafka.topic
+          valueFrom:
+            configMapKeyRef:
+                name: saas-api-config
+                key: general-config-kafka-topic
+        - name: OAuth2.base.url
+          valueFrom:
+            configMapKeyRef:
+                name: saas-api-config
+                key: oauth-url
+        - name: OAuth2.basic.auth.header
+          valueFrom:
+            configMapKeyRef:
+                name: saas-api-config
+                key: oauth-header
+        - name: device.mqtt.message.base.url
+          valueFrom:
+            configMapKeyRef:
+                name: saas-api-config
+                key: dmurl
+        - name: TENANT
+          valueFrom:
+            configMapKeyRef:
+                name: saas-api-config
+                key: tenant
+        - name: ENV
+          valueFrom:
+            configMapKeyRef:
+                name: saas-api-config
+                key: env
+        - name: LOG_LEVEL
+          valueFrom:
+            configMapKeyRef:
+                name: saas-api-config
+                key: log-level
+        - name: device.association.check.enabled
+          valueFrom:
+            configMapKeyRef:
+                name: saas-api-config
+                key: device-association-check-enabled
+        volumeMounts:
+          - mountPath: /usr/local/tomcat/logs
+            name: logs
+      imagePullSecrets:
+      - name: regcred
+      volumes:
+        - name: logs
+          emptyDir: {}

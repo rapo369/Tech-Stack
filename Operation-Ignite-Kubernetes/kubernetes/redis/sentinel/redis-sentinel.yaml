@@ -1,0 +1,113 @@
+apiVersion: v1
+kind: ConfigMap
+metadata:
+  name: sentinel-config
+  labels:
+    app: sentinel
+data:
+  sentinel.conf: |+
+    bind 0.0.0.0
+    port 26379
+    sentinel monitor redis-sentinel redis-svc 6379 2
+    sentinel down-after-milliseconds redis-sentinel 15000
+    sentinel parallel-syncs redis-sentinel 1
+    sentinel failover-timeout redis-sentinel 60000
+---
+apiVersion: v1
+kind: Service
+metadata:
+  name: redis-sentinel-svc
+  labels:
+    app: sentinel
+spec:
+  ports:
+  - port: 26379
+    name: server
+  clusterIP: None
+  selector:
+    app: sentinel
+---
+apiVersion: apps/v1
+kind: StatefulSet
+metadata:
+  name: redis-sentinel
+spec:
+  serviceName: redis-sentinel-svc
+  selector:
+    matchLabels:
+      app: sentinel
+  replicas: 3
+  template:
+    metadata:
+      labels:
+        app: sentinel
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node.ignite.harman.com/component
+                operator: In
+                values: ["sentinel"]
+        podAntiAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            - labelSelector:
+                matchExpressions:
+                  - key: "app"
+                    operator: In
+                    values:
+                    - sentinel
+              topologyKey: "kubernetes.io/hostname"
+      containers:
+      - name: sentinel
+        image: redis:4.0.8
+        command: ["redis-sentinel"]
+        args: ["/conf/sentinel.conf"]
+        ports:
+          - containerPort: 26379
+            name: server
+        volumeMounts:
+          - mountPath: /data
+            name: data
+          - mountPath: /conf
+            name: conf
+          - mountPath: /conf_org
+            name: conf-org
+      initContainers:
+      - name: setup
+        image: busybox
+        command:
+        - cp
+        - "-u"
+        - "/conf_org/sentinel.conf"
+        - "/conf/sentinel.conf"
+        volumeMounts:
+        - name: conf-org
+          mountPath: "/conf_org"
+        - name: conf
+          mountPath: "/conf"
+      volumes:
+        - name: conf-org
+          configMap:
+            name: sentinel-config
+            items:
+             - key: sentinel.conf
+               path: sentinel.conf
+  volumeClaimTemplates:
+  - metadata:
+      name: data
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: normal
+      resources:
+        requests:
+          storage: 10Gi
+  - metadata:
+      name: conf
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: normal
+      resources:
+        requests:
+          storage: 10Gi
