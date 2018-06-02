@@ -1,5 +1,5 @@
 
-kubectl create secret docker-registry regcreds --docker-server=registry.ahanet.net:5000 --docker-username=ssasidharan --docker-password=ssDocker@2016 --docker-email=sabarish.sasidharan@harman.com
+kubectl create secret docker-registry regcreds --docker-server=registry_url:5000 --docker-username=USERNAME --docker-password=PASSWORD --docker-email=EMAIL
 
 
 
