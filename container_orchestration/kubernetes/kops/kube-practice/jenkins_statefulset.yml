@@ -1,0 +1,47 @@
+---
+apiVersion: apps/v1beta1
+kind: StatefulSet
+metadata:
+  name: jenkins-sts
+  labels:
+    name: jenkins
+spec:
+  serviceName: jenkins-svc
+  selector:
+    matchLabels:
+      name: jenkins
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        name: jenkins
+    spec:
+      terminationGracePeriodSeconds: 30
+      imagePullSecrets:
+      - name: regcreds
+      containers:
+      - name: jenkins
+        imagePullPolicy: Always
+        image: registry.ahanet.net:5000/haa-jenkins:test
+        #image: jenkins
+        resources:
+          requests:
+            memory: 1Gi
+            cpu: 1
+        ports:
+        - containerPort: 8080
+        - containerPort: 50000
+        volumeMounts:
+        - name: jenkinshome
+          mountPath: /var/jenkins_home
+  volumeClaimTemplates:
+  - metadata:
+      name: jenkinshome
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: gp2
+      resources:
+        requests:
+          storage: 50Gi
+
+
