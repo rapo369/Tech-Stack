@@ -1,0 +1,53 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: graylog-external-svc
+  labels:
+    app: graylog
+spec:
+  selector:
+    app: graylog
+  ports:
+  - port: 80
+    name: webui
+    protocol: TCP
+    targetPort: 9000
+  type: LoadBalancer
+
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: graylog
+  labels:
+    app: graylog
+    type: headless
+spec:
+  selector:
+    app: graylog
+  ports:
+  - port: 80
+    name: http
+    protocol: TCP
+    targetPort: 9000
+  - port: 514
+    name: udpinput
+    protocol: UDP
+    targetPort: 514
+  - port: 12201
+    name: gelfudp
+    protocol: UDP
+    targetPort: 12201
+  - port: 514
+    name: tcpinput
+    protocol: TCP
+    targetPort: 514
+  - port: 12900
+    name: apiport
+    protocol: TCP
+    targetPort: 12900
+  clusterIP: None
+
+
+

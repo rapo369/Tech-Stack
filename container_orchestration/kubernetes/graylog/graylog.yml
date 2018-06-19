@@ -1,0 +1,73 @@
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: graylogconfigmap
+  labels:
+    app: graylog
+data:
+  GRAYLOG_WEB_ENDPOINT_URI: "http://a11bf34cd6ed111e8a42d02201163a38-298558200.us-east-1.elb.amazonaws.com/api"
+  #GRAYLOG_WEB_ENDPOINT_URI: http://graylog:9000/api
+
+---
+kind: StatefulSet
+apiVersion: apps/v1beta1
+metadata:
+  name: graylog
+spec:
+  serviceName: graylog
+  selector:
+    matchLabels:
+      app: graylog
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: graylog
+      name: graylog
+    spec:
+      containers:
+      - name: graylog
+        image: graylog2/server:2.1.1-1
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 9000
+          protocol: TCP
+        - containerPort: 514
+          protocol: TCP
+        - containerPort: 12900
+          protocol: TCP
+        - containerPort: 514
+          protocol: UDP
+        - containerPort: 12201
+          protocol: UDP
+        envFrom:
+        - configMapRef:
+            name: graylogconfigmap
+        env:
+        - name: GRAYLOG_ROOT_PASSWORD_SHA2
+          valueFrom:
+            secretKeyRef:
+              name: graylogpasswordsha2
+              key: GRAYLOG_ROOT_PASSWORD_SHA2
+        - name: GRAYLOG_PASSWORD_SECRET
+          valueFrom:
+            secretKeyRef:
+              name: graylogpasswordsecret
+              key: GRAYLOG_PASSWORD_SECRET
+        volumeMounts:
+        - mountPath: /usr/share/graylog/data/journal
+          name: graylogdata
+          subPath: journal
+  volumeClaimTemplates:
+  - metadata:
+      name: graylogdata
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: normal
+      resources:
+        requests:
+          storage: 30Gi
+
+
+

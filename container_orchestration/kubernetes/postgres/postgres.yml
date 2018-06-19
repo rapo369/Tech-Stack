@@ -1,0 +1,75 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: postgres-svc
+  labels:
+    app: postgres
+spec:
+  ports:
+  - port: 5432
+  clusterIP: None
+
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: postgres-cm
+data:
+  PGDATA: "/postgres/data/"
+
+
+---
+kind: StatefulSet
+apiVersion: apps/v1
+metadata:
+  name: postgres
+spec:
+  serviceName: postgres-svc
+  selector:
+    matchLabels:
+      app: postgres
+  replicas: 1
+  template:
+    metadata:
+      labels:
+        app: postgres
+      name: postgres
+    spec:
+      containers:
+      - name: postgres
+        image: postgres:9.4.10
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 5432
+        envFrom:
+        - configMapRef:
+            name: postgres-cm
+        env:
+        - name: POSTGRES_PASSWORD
+          valueFrom:
+            secretKeyRef:
+              name: postgrespassword
+              key: POSTGRES_PASSWORD
+        volumeMounts:
+        - mountPath: /postgres
+          name: postgresdata
+  volumeClaimTemplates:
+  - metadata:
+      name: postgresdata
+    spec:
+      accessModes: [ "ReadWriteOnce" ]
+      storageClassName: normal
+      resources:
+        requests:
+          storage: 50Gi
+
+
+
+
+
+
+
+
+
+

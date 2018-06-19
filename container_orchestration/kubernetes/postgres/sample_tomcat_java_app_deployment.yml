@@ -1,0 +1,93 @@
+---
+kind: Service
+apiVersion: v1
+metadata:
+  name: java-sample-svc
+  labels:
+    app: java-sample
+    group: backend
+spec:
+  ports:
+  - port: 8080
+    targetPort: 8080
+  clusterIP: None
+
+---
+kind: ConfigMap
+apiVersion: v1
+metadata:
+  name: java-sample-cm
+  labels:
+    app: java-sample
+    group: backend
+spec:
+  dbname: sample_db_name
+  dbuser: db_username
+  dbpassword: db_password
+  svc_name1: dependent_service_name1
+  svc_name2: dependant_service_name2
+
+---
+kind: Deployment
+apiVersion: apps/v1
+metadata:
+  name: java-sample
+spec:
+  selector:
+    matchLabels:
+      app: java-sample
+      group: backend
+  replicas: 3
+  template:
+    metadata:
+      name: java-sample
+    labels:
+      app: java-sample
+      group: backend
+    spec:
+      affinity:
+        nodeAffinity:
+          requiredDuringSchedulingIgnoredDuringExecution:
+            nodeSelectorTerms:
+            - matchExpressions:
+              - key: node.app.com/service
+                operator: In
+                values: ["value1"]
+      containers:
+      - name:
+        image: registry:5000/imagename:tag
+        command:
+        - sh
+        - -c
+        - "env mongodb.hosts=$NODE_NAME:27017 /bin/sh /path/to/start/script.sh"
+        resources:
+          requests:
+            memory: "2Gi"
+            cpu: "500m"
+        imagePullPolicy: Always
+        ports:
+        - containerPort: 8080
+        #env:
+        #- name: device_association_base_url
+        #  valueFrom:
+        #    configMapRef:
+        #      name: hcp-auth-cm
+        #      key: device_association_base_url
+        envFrom:
+        - configMapRef:
+          name: java-sample-cm
+        volumeMounts:
+        - mountPath: /path/to/tomcat/or/java/server/logs
+          name: logs
+      imagePullSecrets:
+      - name: dockerregistrycredentials
+      volumes:
+      - name: logs
+        emptyDir: {}
+
+
+
+
+
+
+
