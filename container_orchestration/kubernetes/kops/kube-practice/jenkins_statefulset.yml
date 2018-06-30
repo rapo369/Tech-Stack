@@ -22,7 +22,7 @@ spec:
       containers:
       - name: jenkins
         imagePullPolicy: Always
-        image: registry.ahanet.net:5000/haa-jenkins:test
+        image: registry:5000/haa-jenkins:test
         #image: jenkins
         resources:
           requests:
